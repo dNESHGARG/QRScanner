@@ -187,6 +187,7 @@
 		CBC18A0E219BDB530005A1F7 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				CLASSPREFIX = QR;
 				LastSwiftUpdateCheck = 0940;
 				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Dinesh Garg";
