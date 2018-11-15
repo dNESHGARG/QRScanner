@@ -5,6 +5,7 @@
 //  Created by Dinesh Garg on 11/13/18.
 //  Copyright © 2018 Dinesh Garg. All rights reserved.
 //
+// Tutorial link: https://mrgott.com/swift-programing/34-building-a-barcode-and-qr-code-reader-application-for-ios-using-swift-4-pt1
 
 import UIKit
 
