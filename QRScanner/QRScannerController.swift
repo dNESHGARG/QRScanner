@@ -41,10 +41,39 @@ class QRScannerController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
         return codeLabel
     }()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+    // MARK: QRScannerController -
+    // Present a controller.
+    // We should create a separate Controller class with its own view.
+    // but, for the sake of example, we are using an instance of UIViewController.
+    let codeStringLabel:UILabel = {
+        let codeLabel = UILabel()
+        codeLabel.font = UIFont(name: "Helvetica", size: 12)
+        codeLabel.frame = CGRect.zero
+        codeLabel.numberOfLines = 0
+        codeLabel.minimumScaleFactor = 0.75
+        codeLabel.backgroundColor = .white
+        codeLabel.translatesAutoresizingMaskIntoConstraints = false
         
+        return codeLabel
+    }()
+    
+    func displayDetailsViewController(scannedCode: String) {
+        let detailsViewController = UIViewController()
+        detailsViewController.view.frame = self.view.frame
+        codeStringLabel.text = scannedCode
+        detailsViewController.view.addSubview(codeStringLabel)
+        
+        codeStringLabel.bottomAnchor.constraint(equalTo: detailsViewController.view.bottomAnchor).isActive = true
+        codeStringLabel.centerXAnchor.constraint(equalTo: detailsViewController.view.centerXAnchor).isActive = true
+        codeStringLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        codeStringLabel.widthAnchor.constraint(equalTo: detailsViewController.view.widthAnchor).isActive = true
+        
+        //navigationController?.pushViewController(detailsViewController, animated: true)
+        present(detailsViewController, animated: true, completion: nil)
+    }
+    
+    // MARK: QRScannerController - Setup
+    func captureDataSetup() {
         if let captureDevice = AVCaptureDevice.default(for: .video) {
             do {
                 let input = try AVCaptureDeviceInput(device: captureDevice)
@@ -69,14 +98,20 @@ class QRScannerController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
                 print("Error device input");
             }
         }
+    }
+    
+    func setupView() {
+        captureDataSetup()
         
         view.addSubview(codeLabel)
+        
         codeLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         codeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         codeLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
         codeLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
     }
     
+    // MARK: - QRScannerController <AVCaptureMetadataOutputObjectsDelegate>
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if metadataObjects.count == 0 {
             //print("No Input Detected")
@@ -96,48 +131,49 @@ class QRScannerController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
         codeLabel.text = stringCodeValue
         
         // Play system sound with custom mp3 file
-        if let customSoundUrl = Bundle.main.url(forResource: "beep-07", withExtension: "mp3") {
-            var customSoundId: SystemSoundID = 0
-            AudioServicesCreateSystemSoundID(customSoundUrl as CFURL, &customSoundId)
-            //let systemSoundId: SystemSoundID = 1016  // to play apple's built in sound, no need for upper 3 lines
-            
-            AudioServicesAddSystemSoundCompletion(customSoundId, nil, nil, { (customSoundId, _) -> Void in
-                AudioServicesDisposeSystemSoundID(customSoundId)
-            }, nil)
-            
-            AudioServicesPlaySystemSound(customSoundId)
-        }
+//        if let customSoundUrl = Bundle.main.url(forResource: "beep-07", withExtension: "mp3") {
+//            var customSoundId: SystemSoundID = 0
+//            AudioServicesCreateSystemSoundID(customSoundUrl as CFURL, &customSoundId)
+//            //let systemSoundId: SystemSoundID = 1016  // to play apple's built in sound, no need for upper 3 lines
+//
+//            AudioServicesAddSystemSoundCompletion(customSoundId, nil, nil, { (customSoundId, _) -> Void in
+//                AudioServicesDisposeSystemSoundID(customSoundId)
+//            }, nil)
+//
+//            AudioServicesPlaySystemSound(customSoundId)
+//        }
+//
         
+        let systemSoundId: SystemSoundID = 1016  // to play apple's built in sound, no need for upper 3 lines
         
+        AudioServicesAddSystemSoundCompletion(systemSoundId, nil, nil, { (systemSoundId, _) -> Void in
+            AudioServicesDisposeSystemSoundID(systemSoundId)
+        }, nil)
+        
+        AudioServicesPlaySystemSound(systemSoundId)
+        
+        // Stop capturing and hence stop executing metadataOutput function over and over again
+        captureSession?.stopRunning()
+        
+        // Call the function which performs navigation and pass the code string value we just detected
+        //displayDetailsViewController(scannedCode: stringCodeValue)
     }
-
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        
+        setupView()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    // Present a controller.
-    let codeStringLabel:UILabel = {
-        let codeLabel = UILabel()
-        codeLabel.font = UIFont(name: "Helvetica", size: 12)
-        codeLabel.frame = CGRect.zero
-        codeLabel.numberOfLines = 0
-        codeLabel.minimumScaleFactor = 0.75
-        codeLabel.backgroundColor = .white
-        codeLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        return codeLabel
-    }()
-    
-    func displayDetailsViewController(scannedCode: String) {
-        let detailsViewController = UIViewController()
-        detailsViewController.view.frame = self.view.frame
-        codeStringLabel.text = scannedCode
-        detailsViewController.view.addSubview(codeStringLabel)
-        
-        //navigationController?.pushViewController(detailsViewController, animated: true)
-        present(detailsViewController, animated: true, completion: nil)
-    }
-
 }
+
+
+
+
 
